@@ -165,27 +165,35 @@
                     return;
                 }
                 
+                // Use callback form of setState to ensure we're working with latest state
                 if (editingMatchup && editingMatchup.originalIndex !== undefined) {
-                    const updated = [...matchups];
-                    updated[editingMatchup.originalIndex] = { 
-                        name: matchup.name,
-                        battlefield: matchup.battlefield || '',
-                        playOrder: matchup.playOrder || '',
-                        sideboardPlan: matchup.sideboardPlan 
-                    };
-                    setMatchups(updated);
+                    setMatchups(prevMatchups => {
+                        const updated = [...prevMatchups];
+                        updated[editingMatchup.originalIndex] = { 
+                            name: matchup.name,
+                            battlefield: matchup.battlefield || '',
+                            playOrder: matchup.playOrder || '',
+                            sideboardPlan: [...matchup.sideboardPlan]
+                        };
+                        return updated;
+                    });
                 } else {
-                    setMatchups([...matchups, { 
+                    setMatchups(prevMatchups => [...prevMatchups, { 
                         name: matchup.name, 
                         battlefield: matchup.battlefield || '',
                         playOrder: matchup.playOrder || '',
-                        sideboardPlan: matchup.sideboardPlan 
+                        sideboardPlan: [...matchup.sideboardPlan]
                     }]);
                 }
                 
+                // Clear state and switch tab
                 setCurrentMatchup({ name: '', battlefield: '', playOrder: '', sideboardPlan: [] });
                 setEditingMatchup(null);
-                setActiveTab('matchups');
+                
+                // Use setTimeout to ensure state updates complete before tab switch
+                setTimeout(() => {
+                    setActiveTab('matchups');
+                }, 0);
             };
 
             const editMatchup = (index) => {
@@ -1649,9 +1657,9 @@ Sideboard:
                             </div>
                         </div>
                     )}
-
+                    
                     {/* Footer */}
-                    <div className="mt-8 pb-6 text-center text-gray-500 text-sm">
+                    <div className="mt-8 text-center text-gray-500 text-sm pb-4">
                         Created by Thomas Huynh
                     </div>
                 </div>
